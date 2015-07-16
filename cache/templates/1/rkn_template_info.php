@@ -1,0 +1,1 @@
+a:3:{s:8:"tpl_name";s:14:"Predator 1.5.x";s:15:"tpl_description";s:51:"The default Predator template for the 1.5.x series.";s:10:"tpl_author";s:7:"Unknown";}

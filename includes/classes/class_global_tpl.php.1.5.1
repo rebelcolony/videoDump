@@ -1,0 +1,1323 @@
+<?php
+
+class rkn_global_tpl
+{
+	public $rknclass;
+	
+	public function webmasters_header()
+	{
+		header('Content-type: text/html; charset=utf-8');
+		
+		/*
+		Fixed issue with cropper not
+		loading in IE due to conflict
+		with moo-tools
+		*/
+		$this->rknclass->db->query("SELECT site_id,name FROM " . TBLPRE . "sites WHERE owner='{$this->rknclass->user['user_id']}' ORDER BY name ASC");
+		$sites='';
+		$total_sites=0;
+		while($row=$this->rknclass->db->fetch_array())
+		{
+			$sites.="<a href=\"{$this->rknclass->settings['site_url']}/webmasters/index.php?ctr=sites&amp;act=edit_site&amp;id={$row['site_id']}\" class=\"left\">{$row['name']}</a>";
+			++$total_sites;
+		}	
+		echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"
+\"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">
+<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">
+<head>
+<title>{$this->rknclass->settings['site_name']} :: Webmasters :: {$this->rknclass->page_title}</title>
+<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />
+" . (!defined('IN_CROPPER') ? "<script type=\"text/javascript\" src=\"mootools.svn.js\"></script>" : "") . "
+<link rel=\"stylesheet\" href=\"style.css\" type=\"text/css\" media=\"screen,projection\" />
+<!--[if IE]>
+<link href=\"ie.css\" rel=\"stylesheet\" type=\"text/css\" />
+<![endif]-->
+<!--[if IE 7]>
+<link href=\"ie7.css\" rel=\"stylesheet\" type=\"text/css\" />
+<![endif]-->
+" . (!defined('IN_CROPPER') ? "<script type=\"text/javascript\">
+		window.addEvent('domready', function(){
+			$('ajax-form').addEvent('submit', function(e) {
+				new Event(e).stop();
+				var log = $('log_res').empty().addClass('ajax-loading');
+				this.send({
+					update: log,
+					onComplete: function() {
+						log.removeClass('ajax-loading');
+					}
+				});
+			});
+		}); 
+	</script>" : "") . "
+</head>
+
+<body>
+<div id=\"container\">
+<div id=\"search\"><form action=\"{$this->rknclass->settings['site_url']}/index.php?ctr=search\" method=\"post\"><input type=\"text\" class=\"search-bar\" name=\"search_phrase\" /> <input type=\"image\" src=\"images/search.gif\" align=\"absmiddle\"/></form></div>
+<div class=\"clearer\"><span></span></div>
+<div id=\"member\">
+<div id=\"member_av\"><img src=\"{$this->rknclass->settings['site_url']}/index.php?ctr=avatar&amp;id={$this->rknclass->user['user_id']}\" width=\"62\" height=\"62\" /></div>
+<div id=\"member_name\">Welcome Back, <strong>{$this->rknclass->user['username']}</strong></div>
+<div id=\"member_info\"><a href=\"{$this->rknclass->settings['site_url']}/webmasters/?ctr=login&amp;act=logout\" class=\"top_link\">Logout</a> - Usergroup: <strong>{$this->rknclass->user['group']['name']}</strong></div>
+</div>
+<div id=\"nav\"></div>
+ 
+<div id=\"wrap1\">
+<div id=\"wrap2\">
+        <div class=\"left-menu\">
+        	<div class=\"menu-title\">Management</div>
+            <a href=\"{$this->rknclass->settings['site_url']}/webmasters/index.php?ctr=sites&amp;act=add_site\" class=\"left\">Add Site</a>
+            <a href=\"{$this->rknclass->settings['site_url']}/webmasters/index.php?ctr=stats&amp;act=my_stats\" class=\"left\">View Statistics</a>
+			<a href=\"{$this->rknclass->settings['site_url']}/webmasters/index.php?ctr=stats&amp;act=all_stats\" class=\"left\">All Webmaster Stats</a>
+        	<div class=\"menu-title\">Content</div>
+            <a href=\"{$this->rknclass->settings['site_url']}/webmasters/index.php?ctr=content&amp;act=submit_plug\" class=\"left\">Submit Plug</a>
+			<a href=\"{$this->rknclass->settings['site_url']}/webmasters/index.php?ctr=content&amp;act=upload_p3\" class=\"left\">Upload .p3 Archive</a>
+            <a href=\"{$this->rknclass->settings['site_url']}/webmasters/index.php?ctr=content&amp;act=my_content\" class=\"left\">View Submitted Plugs</a>
+            <a href=\"{$this->rknclass->settings['site_url']}/webmasters/index.php?ctr=content&amp;act=our_content\" class=\"left\">View Our Media</a>
+        	<div class=\"menu-title\">Your sites ($total_sites)</div>
+            " . ($total_sites<1 ? "<a href=\"{$this->rknclass->settings['site_url']}/webmasters/index.php?ctr=sites&amp;act=add_site\" class=\"left\">Add Site</a>" : $sites) . "
+        </div>
+
+
+
+<div id=\"content\">
+<div class=\"main\">
+
+        <div class=\"main-stuff\">";
+	}
+	
+	public function webmasters_footer()
+	{
+		echo " </div>
+		       </div>
+        <div class=\"clear\"></div>
+
+	</div>
+	</div>
+</div>
+<div class=\"footer\">
+
+<div class=\"footer-left\">
+<a href=\"#\" onclick=\"window.scrollTo(0,0); return false;\">Back to top!</a>
+</div>
+
+</div>
+<div class=\"footer-bottom\">
+<div class=\"footer-bottom-copyright\">Powered by Predator CMS {$this->rknclass->settings['version']}" . ((defined('RKN__demo') AND RKN__demo == '1') ? ' (DEMO)' : '') ." &copy; " . date('Y') . " <a href=\"http://www.ranakin.com\">Ranakin Web Development</a></div>
+</div>
+</div>
+</body>
+</html>";	
+	}
+	
+	public function webmasters_error($error)
+	{
+		echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">
+<html>
+<head>
+<style>
+body 
+{
+background-image:url(images/login_01.jpg);
+background-repeat:repeat-x;     
+padding:0;
+}
+
+#error {
+background-image:url(images/error.jpg);
+background-repeat:no-repeat;
+background-position:left;
+border: 1px solid #000;
+background-color: #e3ecf3;      
+margin-top: 200px;       
+height: 150px; 
+position: absolute; 
+left: 50%;
+width:437px;
+margin-left: -220px;
+font-family:Verdana, Arial, Helvetica, sans-serif;
+font-size:12px;
+}
+
+#copy {      
+height: 150px; 
+width:437px;
+font-family:Verdana, Arial, Helvetica, sans-serif;
+font-size:12px;
+}
+
+#title-bar
+{
+	background-image:url(images/redirecting-bar.jpg);
+	background-repeat:repeat-x;
+	height:35px;
+	text-align:left;
+	text-indent:10px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-weight:bold;
+	padding-top:10px;
+	color:#FFFFFF;
+}
+#text-field
+{
+	background-image:url(images/login_08.jpg);
+	background-repeat:no-repeat;
+	border-width:1px;
+	border-color:#b0c8e1;
+	margin-right:50px;
+	margin-left:auto;
+}
+#spacer
+{
+	height:7px;
+}
+#message
+{
+	margin-top:20px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color:#2f4861;
+}
+#click-here
+{
+	margin-top:20px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color:#2f4861;
+}
+a:link
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:visited
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:active
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:hover
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+#copyright {   
+margin-top: 375px;       
+height: 150px; 
+position: absolute; 
+left: 50%;
+width:437px;
+margin-left: -220px;
+font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+text-align:center;
+font-size:11px;
+color:#2f4861;
+}
+</style>
+<title>{$this->rknclass->settings['site_name']} :: Error detected...</title>
+<script language=\"JavaScript\">
+function submitform()
+{
+  document.login.submit();
+}
+</script>
+</head>
+<body>
+	<div id=\"error\" align=\"center\">
+    	<div id=\"title-bar\">Error</div>
+        <div id=\"message\">$error</div>
+        <div id=\"click-here\"><a href=\"javascript:history.go(-1)\">Click here to go back!</a></div>
+	</div>
+    <div id=\"copyright\">Predator CMS {$this->rknclass->settings['version']} &copy; " . date('Y') . " Ranakin Web Development</div>
+</html>";
+	}
+	
+	public function webmasters_message($msg)
+	{
+		echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">
+<html>
+<head>
+<style>
+body 
+{
+background-image:url(images/login_01.jpg);
+background-repeat:repeat-x;     
+padding:0;
+}
+
+#success {
+background-image:url(images/success.jpg);
+background-repeat:no-repeat;
+background-position:left;
+border: 1px solid #000;
+background-color: #e3ecf3;      
+margin-top: 200px;       
+height: 150px; 
+position: absolute; 
+left: 50%;
+width:437px;
+margin-left: -220px;
+font-family:Verdana, Arial, Helvetica, sans-serif;
+font-size:12px;
+}
+
+#copy {      
+height: 150px; 
+width:437px;
+font-family:Verdana, Arial, Helvetica, sans-serif;
+font-size:12px;
+}
+
+#title-bar
+{
+	background-image:url(images/redirecting-bar.jpg);
+	background-repeat:repeat-x;
+	height:35px;
+	text-align:left;
+	text-indent:10px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-weight:bold;
+	padding-top:10px;
+	color:#FFFFFF;
+}
+#text-field
+{
+	background-image:url(images/login_08.jpg);
+	background-repeat:no-repeat;
+	border-width:1px;
+	border-color:#b0c8e1;
+	margin-right:50px;
+	margin-left:auto;
+}
+#spacer
+{
+	height:7px;
+}
+#message
+{
+	margin-top:20px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color:#2f4861;
+}
+#click-here
+{
+	margin-top:20px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color:#2f4861;
+}
+a:link
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:visited
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:active
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:hover
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+#copyright {   
+margin-top: 375px;       
+height: 150px; 
+position: absolute; 
+left: 50%;
+width:437px;
+margin-left: -220px;
+font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+text-align:center;
+font-size:11px;
+color:#2f4861;
+}
+</style>
+<title>{$this->rknclass->settings['site_name']} ::Success!</title>
+<script language=\"JavaScript\">
+function submitform()
+{
+  document.login.submit();
+}
+</script>
+</head>
+<body>
+	<div id=\"success\" align=\"center\">
+    	<div id=\"title-bar\">Success!</div>
+        <div id=\"message\">$msg</div>
+	</div>
+    <div id=\"copyright\">Predator CMS {$this->rknclass->settings['version']} &copy; " . date('Y') . " Ranakin Web Development</div>
+</html>";
+	}
+	
+	public function admin_header()
+	{
+		
+		header('Content-type: text/html; charset=utf-8');
+		
+		$admin_path=$this->rknclass->settings['site_url'] . '/' . RKN__adminpath;
+		
+		/*==========
+		CONTENT tab
+		===========*/
+		
+		
+		if(RKN__admintab === 'content')
+		{
+			echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"
+	\"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">
+	<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">
+	<head>
+	<title>{$this->rknclass->settings['site_name']} :: Admin Panel :: {$this->rknclass->page_title}</title>
+	<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />
+	" . (!defined('IN_CROPPER') ? "<script type=\"text/javascript\" src=\"mootools.svn.js\"></script>" : "") . "
+	<link rel=\"stylesheet\" href=\"style.css\" type=\"text/css\" media=\"screen,projection\" />
+	<!--[if IE]>
+	<link href=\"ie.css\" rel=\"stylesheet\" type=\"text/css\" />
+	<![endif]-->
+	<!--[if IE 7]>
+	<link href=\"ie7.css\" rel=\"stylesheet\" type=\"text/css\" />
+	<![endif]-->
+	" . (!defined('IN_CROPPER') ? "<script type=\"text/javascript\">
+			window.addEvent('domready', function(){
+				$('ajax-form').addEvent('submit', function(e) {
+					new Event(e).stop();
+					var log = $('log_res').empty().addClass('ajax-loading');
+					this.send({
+						update: log,
+						onComplete: function() {
+							log.removeClass('ajax-loading');
+						}
+					});
+				});
+			});
+			
+function ajax_update(what,id,type)
+{
+	var url='{$this->rknclass->settings['site_url']}/" . RKN__adminpath . "/index.php?ctr=content'
+	url=url+'&act=update_'+what;
+	url=url+'&id='+id;
+	url=url+'&type='+type;
+	
+	document.getElementById(what+'-'+id).innerHTML='<img src=\"images/spinner.gif\" align=\"center\" />';
+	
+	new Ajax(url, {
+		method: 'get',
+		update: $(what+'-'+id)
+	}, false,false,false,true).request();
+}
+
+function edit_views(id,views)
+{
+	document.getElementById('views-'+id).innerHTML='<input name=\"edit-vews\" type=\"text\" value=\"'+views+'\" onchange=\"process_views(\''+id+'\', this.value);\" id=\"update_views\"/>';
+}
+
+function edit_cat(id)
+{
+	document.getElementById('cat-'+id).innerHTML='<select name=\"categories\" onchange=\"process_cat(\''+id+'\', this.value);\"><option value=\"---\" SELECTED>---</option>" . $this->rknclass->utils->get_cats() . "</select>';
+}
+
+function process_views(id,views)
+{
+	document.getElementById('views-'+id).innerHTML='<img src=\"images/spinner.gif\" align=\"center\" />';
+	var url='{$this->rknclass->settings['site_url']}/" . RKN__adminpath . "/index.php?ctr=content'
+	url=url+'&act=update_views';
+	url=url+'&id='+id;
+	url=url+'&view_count='+views
+	new Ajax(url, {
+		method: 'get',
+		update: $('views-'+id)
+	}, false,false,false,true).request();
+}
+
+function process_cat(id,value)
+{
+
+	document.getElementById('cat-'+id).innerHTML='<img src=\"images/spinner.gif\" align=\"center\" />';
+	var url='{$this->rknclass->settings['site_url']}/" . RKN__adminpath . "/index.php?ctr=content'
+	url=url+'&act=update_cat';
+	url=url+'&id='+id;
+	url=url+'&cat_id='+value
+	new Ajax(url, {
+		method: 'get',
+		update: $('cat-'+id)
+	}, false,false,false,true).request();
+}
+		</script>" : "")  . (defined('TINYMCE') ? "<!-- TinyMCE -->
+<script language=\"javascript\" type=\"text/javascript\" src=\"{$this->rknclass->settings['site_url']}/jscripts/tiny_mce/tiny_mce.js\"></script>
+<script language=\"javascript\" type=\"text/javascript\">
+	tinyMCE.init({
+    	mode: \"textareas\",
+    	editor_selector : \"wysiwyg_editor\",
+		theme : \"advanced\",
+		plugins : \"style,layer,table,save,advhr,advimage,advlink,emotions,iespell,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template\",
+		theme_advanced_buttons1_add : \"fontselect,fontsizeselect\",
+		theme_advanced_buttons2_add : \"separator,insertdate,inserttime,preview,separator,forecolor,backcolor\",
+		theme_advanced_buttons2_add_before: \"cut,copy,paste,pastetext,pasteword,separator,search,replace,separator\",
+		theme_advanced_buttons3_add_before : \"tablecontrols,separator\",
+		theme_advanced_buttons3_add : \"emotions,iespell,media,advhr,separator,print,separator,ltr,rtl,separator,fullscreen\",
+		theme_advanced_buttons4 : \"absolute,|,styleprops,|,cite,abbr,acronym,del,ins,attribs,|,visualchars,nonbreaking,template,|,code\",
+		theme_advanced_toolbar_location : \"top\",
+		theme_advanced_toolbar_align : \"left\",
+		theme_advanced_path_location : \"bottom\",
+	    plugin_insertdate_dateFormat : \"%Y-%m-%d\",
+	    plugin_insertdate_timeFormat : \"%H:%M:%S\",
+		extended_valid_elements : \"hr[class|width|size|noshade],font[face|size|color|style],span[class|align|style],iframe[src|width|height|name|align]\",
+		theme_advanced_resize_horizontal : false,
+		theme_advanced_resizing : true,
+		nonbreaking_force_tab : true,
+		apply_source_formatting : true,
+		remove_script_host : false
+	});
+
+	function fileBrowserCallBack(field_name, url, type, win) {
+		// This is where you insert your custom filebrowser logic
+		alert(\"Example of filebrowser callback: field_name: \" + field_name + \", url: \" + url + \", type: \" + type);
+
+		// Insert new URL, this would normaly be done in a popup
+		win.document.forms[0].elements[field_name].value = \"someurl.htm\";
+	}
+</script>
+<!-- /TinyMCE -->" : '') . "
+	</head>
+	
+	<body>
+	<script type=\"text/javascript\" src=\"tooltip/wz_tooltip.js\"></script>
+	<div id=\"container\">
+	<div id=\"search\"><form action=\"index.php?ctr=content&amp;act=search_engine\" method=\"post\"><input type=\"text\" class=\"search-bar\" name=\"search_phrase\" /></a><input type=\"image\" src=\"images/search.gif\" align=\"absmiddle\"/></form></div>
+	<div class=\"clearer\"><span></span></div>
+	<div id=\"member\">
+	<div id=\"member_av\"><img src=\"{$this->rknclass->settings['site_url']}/index.php?ctr=avatar&amp;id={$this->rknclass->user['user_id']}\" width=\"62\" height=\"62\" /></div>
+	<div id=\"member_name\">Welcome Back, <strong>{$this->rknclass->user['username']}</strong></div>
+	<div id=\"member_info\"><a href=\"{$this->rknclass->settings['site_url']}/" . RKN__adminpath . "/?ctr=login&amp;act=logout\" class=\"top_link\">Logout</a> - Usergroup: <strong>{$this->rknclass->user['group']['name']}</strong></div>
+	</div>
+	<div id=\"nav\"><a href=\"$admin_path/index.php?ctr=management\"><img src=\"images/management-tab.jpg\" border=\"0\"/></a><a href=\"$admin_path/index.php?ctr=security\"><img src=\"images/security-tab.jpg\" border=\"0\"/></a><a href=\"$admin_path/index.php?ctr=templates\"><img src=\"images/templates-tab.jpg\" border=\"0\" /></a><a href=\"$admin_path/index.php?ctr=content\"><img src=\"images/content-tab.jpg\" border=\"0\" /></a></div>
+	 
+	<div id=\"wrap1\">
+	<div id=\"wrap2\">
+			<div class=\"left-menu\">
+				
+				<div class=\"menu-title\">Plugs</div>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=add_plug\" class=\"left\">Add Plug</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=view_plugs\" class=\"left\">View/Edit Plugs</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=plugs_pending_approval\" class=\"left\">Plugs Pending Approval</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=tags\" class=\"left\">View Tags</a>
+				
+				<div class=\"menu-title\">Videos</div>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=add_hosted_video\" class=\"left\">Add Hosted Video</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=add_embedded_video\" class=\"left\">Add Embedded Video</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=view_videos\" class=\"left\">View/Edit Videos</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=conversion_queue\" class=\"left\">FFMPEG Queue</a>
+				
+				<div class=\"menu-title\">Blogs</div>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=create_blog_entry\" class=\"left\">Create Blog Entry</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=view_blog_entries\" class=\"left\">View/Edit Blog Entries</a>
+				
+				<div class=\"menu-title\">Comments</div>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=view_comments\" class=\"left\">View/Manage Comments</a>
+
+				<div class=\"menu-title\">Categories</div>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=add_category\" class=\"left\">Add Category</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=view_categories\" class=\"left\">View/Manage Categories</a>
+				<div class=\"menu-title\">Feeds</div>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=add_feed\" class=\"left\">Add new feed</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=manage_feeds\" class=\"left\">View / Manage Feeds</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=auto_feed_settings\" class=\"left\">Auto-Import Settings</a>
+				
+				<div class=\"menu-title\">Content Providers</div>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=add_sponsor\" class=\"left\" style=\"font-weight:bold;\">Add Sponsor</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=manage_sponsors\" class=\"left\">Manage Sponsors</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=add_sponsor_site\" class=\"left\" style=\"font-weight:bold;\">Add Sponsor Site</a></strong>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=manage_sponsors_sites\" class=\"left\">Manage Sponsor Sites</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=new_ad\" class=\"left\" style=\"font-weight:bold;\">New Advertisement</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=manage_sponsor_ads\" class=\"left\">Manage Advertisements</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=new_banner_link\" class=\"left\" style=\"font-weight:bold;\">New Banner Link</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=manage_banner_links\" class=\"left\">Manage Banner Links</a>
+				
+				<div class=\"menu-title\">Listings Ads</div>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=ads_bp_settings\" class=\"left\">Settings</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=new_ad_bp\" class=\"left\">New advertisement</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=ads_between_plugs\" class=\"left\">View Advertisements</a>
+
+				<div class=\"menu-title\">Country Settings</div>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=countries\" class=\"left\">View Countries</a>
+				<a href=\"$admin_path/index.php?ctr=content&amp;act=flagged_countries\" class=\"left\">Manage Flagged</a>
+			</div>
+	
+	<div id=\"content\">
+	<div class=\"main\">
+	
+			<div class=\"main-stuff\">";	
+		}
+		
+		/*=============
+		MANAGEMENT tab
+		===============*/
+		
+		elseif(RKN__admintab === 'management')
+		{
+			echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"
+	\"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">
+	<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">
+	<head>
+	<title>{$this->rknclass->settings['site_name']} :: Admin Panel :: {$this->rknclass->page_title}</title>
+	<meta http-equiv=\"content-type\" content=\"text/html; charset=iso-8859-1\" />
+	" . (!defined('IN_CROPPER') ? "<script type=\"text/javascript\" src=\"mootools.svn.js\"></script>" : "") . "
+	<link rel=\"stylesheet\" href=\"style.css\" type=\"text/css\" media=\"screen,projection\" />
+	<!--[if IE]>
+	<link href=\"ie.css\" rel=\"stylesheet\" type=\"text/css\" />
+	<![endif]-->
+	<!--[if IE 7]>
+	<link href=\"ie7.css\" rel=\"stylesheet\" type=\"text/css\" />
+	<![endif]-->
+	" . (!defined('IN_CROPPER') ? "<script type=\"text/javascript\">
+			window.addEvent('domready', function(){
+				$('ajax-form').addEvent('submit', function(e) {
+					new Event(e).stop();
+					var log = $('log_res').empty().addClass('ajax-loading');
+					this.send({
+						update: log,
+						onComplete: function() {
+							log.removeClass('ajax-loading');
+						}
+					});
+				});
+			}); 
+		</script>" : "") . "
+	</head>
+	
+	<body>
+	<div id=\"container\">
+	<div id=\"search\"><form action=\"index.php?ctr=content&amp;act=search_engine\" method=\"post\"><input type=\"text\" class=\"search-bar\" name=\"search_phrase\" /></a><input type=\"image\" src=\"images/search.gif\" align=\"absmiddle\"/></form></div>
+	<div class=\"clearer\"><span></span></div>
+	<div id=\"member\">
+	<div id=\"member_av\"><img src=\"{$this->rknclass->settings['site_url']}/index.php?ctr=avatar&amp;id={$this->rknclass->user['user_id']}\" width=\"62\" height=\"62\" /></div>
+	<div id=\"member_name\">Welcome Back, <strong>{$this->rknclass->user['username']}</strong></div>
+	<div id=\"member_info\"><a href=\"{$this->rknclass->settings['site_url']}/" . RKN__adminpath . "/?ctr=login&amp;act=logout\" class=\"top_link\">Logout</a> - Usergroup: <strong>{$this->rknclass->user['group']['name']}</strong></div>
+	</div>
+	<div id=\"nav\"><a href=\"$admin_path/index.php?ctr=management\"><img src=\"images/management-tab.jpg\" border=\"0\"/></a><a href=\"$admin_path/index.php?ctr=security\"><img src=\"images/security-tab.jpg\" border=\"0\"/></a><a href=\"$admin_path/index.php?ctr=templates\"><img src=\"images/templates-tab.jpg\" border=\"0\" /></a><a href=\"$admin_path/index.php?ctr=content\"><img src=\"images/content-tab.jpg\" border=\"0\" /></a></div>
+	 
+	<div id=\"wrap1\">
+	<div id=\"wrap2\">
+			<div class=\"left-menu\">
+				
+				<div class=\"menu-title\">Settings</div>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=core_settings\" class=\"left\">Core Configuration</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=session_settings\" class=\"left\">Session Engine Settings</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=rebuild_cache\" class=\"left\">Rebuild System Cache</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=rebuild_stats\" class=\"left\">Repair Statistics</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=cluster_settings\" class=\"left\">Server Clustering</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=i18n_settings\" class=\"left\">Internationalisation</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=seo_url_settings\" class=\"left\">SEO Url Settings</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=submission_settings\" class=\"left\">Submission Settings</a>
+				
+				<div class=\"menu-title\">Components</div>
+				
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=trade_settings\" class=\"left\">Traffic Trade System</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=image_cropper\" class=\"left\">Image Cropper</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=sitemap_generator\" class=\"left\">Sitemap Generator</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=ffmpeg_settings\" class=\"left\">FFMPEG</a>
+
+				<div class=\"menu-title\">Usergroups</div>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=add_group\" class=\"left\">Add Usergroup</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=manage_groups\" class=\"left\">Manage Usergroups</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=add_acp_restrictions\" class=\"left\">Add ACP restrictions</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=view_acp_restrictions\" class=\"left\">Edit ACP restrictions</a>
+				
+				<div class=\"menu-title\">Members</div>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=add_user\" class=\"left\">Add User</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=manage_users\" class=\"left\">Manage Users</a>
+				
+				<div class=\"menu-title\">Trade System</div>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=add_site\" class=\"left\">Add Site</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=view_sites\" class=\"left\">View/Manage Sites</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=view_sites_productivity\" class=\"left\">View Productivity</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=view_banned_sites\" class=\"left\">View Banned Sites</a>
+
+				<div class=\"menu-title\">Traffic Data</div>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=incoming_hits\" class=\"left\">Incoming Traffic</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=outgoing_hits\" class=\"left\">Outgoing Traffic</a>
+				
+				<div class=\"menu-title\">Mail System</div>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=compose_mail\" class=\"left\">Compose Mail</a>
+				<a href=\"$admin_path/index.php?ctr=management&amp;act=mail_man\" class=\"left\">Mail Man</a>
+			</div>
+	
+	<div id=\"content\">
+	<div class=\"main\">
+	
+			<div class=\"main-stuff\">";	
+		}
+		
+		
+		/*============
+		TEMPLATES tab
+		==============*/
+		
+		
+		elseif(RKN__admintab === 'templates')
+		{
+			echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"
+	\"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">
+	<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">
+	<head>
+	<title>{$this->rknclass->settings['site_name']} :: Admin Panel :: {$this->rknclass->page_title}</title>
+	<meta http-equiv=\"content-type\" content=\"text/html; charset=iso-8859-1\" />
+	" . (!defined('IN_CROPPER') ? "<script type=\"text/javascript\" src=\"mootools.svn.js\"></script>" : "") . "
+	<link rel=\"stylesheet\" href=\"style.css\" type=\"text/css\" media=\"screen,projection\" />
+	<!--[if IE]>
+	<link href=\"ie.css\" rel=\"stylesheet\" type=\"text/css\" />
+	<![endif]-->
+	<!--[if IE 7]>
+	<link href=\"ie7.css\" rel=\"stylesheet\" type=\"text/css\" />
+	<![endif]-->
+	" . (!defined('IN_CROPPER') ? "<script type=\"text/javascript\">
+			window.addEvent('domready', function(){
+				$('ajax-form').addEvent('submit', function(e) {
+					new Event(e).stop();
+					var log = $('log_res').empty().addClass('ajax-loading');
+					this.send({
+						update: log,
+						onComplete: function() {
+							log.removeClass('ajax-loading');
+						}
+					});
+				});
+			}); 
+		</script>" : "") . "
+	</head>
+	
+	<body>
+	<div id=\"container\">
+	<div id=\"search\"><form action=\"index.php?ctr=content&amp;act=search_engine\" method=\"post\"><input type=\"text\" class=\"search-bar\" name=\"search_phrase\" /></a><input type=\"image\" src=\"images/search.gif\" align=\"absmiddle\"/></form></div>
+	<div class=\"clearer\"><span></span></div>
+	<div id=\"member\">
+	<div id=\"member_av\"><img src=\"{$this->rknclass->settings['site_url']}/index.php?ctr=avatar&amp;id={$this->rknclass->user['user_id']}\" width=\"62\" height=\"62\" /></div>
+	<div id=\"member_name\">Welcome Back, <strong>{$this->rknclass->user['username']}</strong></div>
+	<div id=\"member_info\"><a href=\"{$this->rknclass->settings['site_url']}/" . RKN__adminpath . "/?ctr=login&amp;act=logout\" class=\"top_link\">Logout</a> - Usergroup: <strong>{$this->rknclass->user['group']['name']}</strong></div>
+	</div>
+	<div id=\"nav\"><a href=\"$admin_path/index.php?ctr=management\"><img src=\"images/management-tab.jpg\" border=\"0\"/></a><a href=\"$admin_path/index.php?ctr=security\"><img src=\"images/security-tab.jpg\" border=\"0\"/></a><a href=\"$admin_path/index.php?ctr=templates\"><img src=\"images/templates-tab.jpg\" border=\"0\" /></a><a href=\"$admin_path/index.php?ctr=content\"><img src=\"images/content-tab.jpg\" border=\"0\" /></a></div>
+	 
+	<div id=\"wrap1\">
+	<div id=\"wrap2\">
+			<div class=\"left-menu\">
+				
+				<div class=\"menu-title\">Settings</div>
+				<a href=\"$admin_path/index.php?ctr=templates&amp;act=config\" class=\"left\">Template Configuration</a>
+				<a href=\"$admin_path/index.php?ctr=templates&amp;act=add_template\" class=\"left\">Add template</a>
+
+				<div class=\"menu-title\">Maintanance</div>
+				<a href=\"$admin_path/index.php?ctr=templates&amp;act=repair_cache\" class=\"left\">Repair Cache</a>
+				
+			</div>
+	
+	<div id=\"content\">
+	<div class=\"main\">
+	
+			<div class=\"main-stuff\">";	
+		}
+		
+		/*=================
+		EDIT_TEMPLATES tab
+		===================*/
+				
+		elseif(RKN__admintab === 'edit_templates')
+		{
+			echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"
+	\"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">
+	<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">
+	<head>
+	<title>{$this->rknclass->settings['site_name']} :: Admin Panel :: Templates :: {$this->rknclass->page_title}</title>
+	<meta http-equiv=\"content-type\" content=\"text/html; charset=iso-8859-1\" />
+	" . (!defined('IN_CROPPER') ? "<script type=\"text/javascript\" src=\"mootools.svn.js\"></script>" : "") . "
+	<link rel=\"stylesheet\" href=\"style.css\" type=\"text/css\" media=\"screen,projection\" />
+	<!--[if IE]>
+	<link href=\"ie.css\" rel=\"stylesheet\" type=\"text/css\" />
+	<![endif]-->
+	<!--[if IE 7]>
+	<link href=\"ie7.css\" rel=\"stylesheet\" type=\"text/css\" />
+	<![endif]-->
+	" . (!defined('IN_CROPPER') ? "<script type=\"text/javascript\">
+			window.addEvent('domready', function(){
+				$('ajax-form').addEvent('submit', function(e) {
+					new Event(e).stop();
+					var log = $('log_res').empty().addClass('ajax-loading');
+					this.send({
+						update: log,
+						onComplete: function() {
+							log.removeClass('ajax-loading');
+						}
+					});
+				});
+			}); 
+		</script>" : "") . "
+<script type=\"text/javascript\">
+<!--
+function popup_large() {
+window.open(\"index.php?ctr=edit_templates&act=large_editor&id={$this->rknclass->get['id']}\", \"large_edit\",\"height=750,width=950,toolbar=no,scrollbars=no,menubar=no,top=0,left=0,resizable=1\"); 
+}
+//-->
+</script>
+	</head>
+	
+	<body\">
+	<div id=\"container\">
+	<div id=\"search\"><form action=\"index.php?ctr=content&amp;act=search_engine\" method=\"post\"><input type=\"text\" class=\"search-bar\" name=\"search_phrase\" /></a><input type=\"image\" src=\"images/search.gif\" align=\"absmiddle\"/></form></div>
+	<div class=\"clearer\"><span></span></div>
+	<div id=\"member\">
+	<div id=\"member_av\"><img src=\"{$this->rknclass->settings['site_url']}/index.php?ctr=avatar&amp;id={$this->rknclass->user['user_id']}\" width=\"62\" height=\"62\" /></div>
+	<div id=\"member_name\">Welcome Back, <strong>{$this->rknclass->user['username']}</strong></div>
+	<div id=\"member_info\"><a href=\"{$this->rknclass->settings['site_url']}/" . RKN__adminpath . "/?ctr=login&amp;act=logout\" class=\"top_link\">Logout</a> - Usergroup: <strong>{$this->rknclass->user['group']['name']}</strong></div>
+	</div>
+	<div id=\"nav\"><a href=\"$admin_path/index.php?ctr=management\"><img src=\"images/management-tab.jpg\" border=\"0\"/></a><a href=\"$admin_path/index.php?ctr=security\"><img src=\"images/security-tab.jpg\" border=\"0\"/></a><a href=\"$admin_path/index.php?ctr=templates\"><img src=\"images/templates-tab.jpg\" border=\"0\" /></a><a href=\"$admin_path/index.php?ctr=content\"><img src=\"images/content-tab.jpg\" border=\"0\" /></a></div>
+	 
+	<div id=\"wrap1\">
+	<div id=\"wrap2\">
+			<div class=\"left-menu\">
+				
+				<div class=\"menu-title\">Main Templates</div>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=header&amp;id={$this->rknclass->get['id']}\" class=\"left\">Site Header</a>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=index&amp;id={$this->rknclass->get['id']}\" class=\"left\">Index Page</a>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=footer&amp;id={$this->rknclass->get['id']}\" class=\"left\">Site Footer</a>
+
+				<div class=\"menu-title\">Plugs and Content</div>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=plugs&amp;id={$this->rknclass->get['id']}\" class=\"left\">Content Listings</a>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=video_page&amp;id={$this->rknclass->get['id']}\" class=\"left\">Video Page</a>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=blog_page&amp;id={$this->rknclass->get['id']}\" class=\"left\">Blog Page</a>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=top_frame&amp;id={$this->rknclass->get['id']}\" class=\"left\">Top Frame</a>
+				<div class=\"menu-title\">Comments</div>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=comments_page&amp;id={$this->rknclass->get['id']}\" class=\"left\">Comments Page</a>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=comments&amp;id={$this->rknclass->get['id']}\" class=\"left\">Comments Listings</a>
+
+				<div class=\"menu-title\">Video Players</div>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=video_player_flv&amp;id={$this->rknclass->get['id']}\" class=\"left\">Flash Video Player</a>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=video_player_wmv&amp;id={$this->rknclass->get['id']}\" class=\"left\">Windows Media Player</a>
+								
+				<div class=\"menu-title\">User Pages</div>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=register&amp;id={$this->rknclass->get['id']}\" class=\"left\">Registration Page</a>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=login&amp;id={$this->rknclass->get['id']}\" class=\"left\">Account Login</a>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=forgot_password&amp;id={$this->rknclass->get['id']}\" class=\"left\">Password Request</a>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=edit_profile&amp;id={$this->rknclass->get['id']}\" class=\"left\">Profile Management</a>
+
+				<div class=\"menu-title\">Misc</div>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=message&amp;id={$this->rknclass->get['id']}\" class=\"left\">Message Page</a>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=search&amp;id={$this->rknclass->get['id']}\" class=\"left\">Search Engine Homepage</a>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=pagination&amp;id={$this->rknclass->get['id']}\" class=\"left\">Pagination</a>
+				<a href=\"$admin_path/index.php?ctr=edit_templates&amp;act=template_information&amp;id={$this->rknclass->get['id']}\" class=\"left\">Template Information</a>
+				
+			</div>
+	
+	<div id=\"content\">
+	<div class=\"main\">
+	
+			<div class=\"main-stuff\">";	
+		}
+		
+		
+		/*===========
+		SECURITY tab
+		=============*/	
+		
+			
+		elseif(RKN__admintab === 'security')
+		{
+			echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"
+	\"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">
+	<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">
+	<head>
+	<title>{$this->rknclass->settings['site_name']} :: Admin Panel :: Templates :: {$this->rknclass->page_title}</title>
+	<meta http-equiv=\"content-type\" content=\"text/html; charset=iso-8859-1\" />
+	" . (!defined('IN_CROPPER') ? "<script type=\"text/javascript\" src=\"mootools.svn.js\"></script>" : "") . "
+	<link rel=\"stylesheet\" href=\"style.css\" type=\"text/css\" media=\"screen,projection\" />
+	<!--[if IE]>
+	<link href=\"ie.css\" rel=\"stylesheet\" type=\"text/css\" />
+	<![endif]-->
+	<!--[if IE 7]>
+	<link href=\"ie7.css\" rel=\"stylesheet\" type=\"text/css\" />
+	<![endif]-->
+	" . (!defined('IN_CROPPER') ? "<script type=\"text/javascript\">
+			window.addEvent('domready', function(){
+				$('ajax-form').addEvent('submit', function(e) {
+					new Event(e).stop();
+					var log = $('log_res').empty().addClass('ajax-loading');
+					this.send({
+						update: log,
+						onComplete: function() {
+							log.removeClass('ajax-loading');
+						}
+					});
+				});
+			}); 
+		</script>" : "") . "
+	</head>
+	
+	<body\">
+	<div id=\"container\">
+	<div id=\"search\"><form action=\"index.php?ctr=content&amp;act=search_engine\" method=\"post\"><input type=\"text\" class=\"search-bar\" name=\"search_phrase\" /></a><input type=\"image\" src=\"images/search.gif\" align=\"absmiddle\"/></form></div>
+	<div class=\"clearer\"><span></span></div>
+	<div id=\"member\">
+	<div id=\"member_av\"><img src=\"{$this->rknclass->settings['site_url']}/index.php?ctr=avatar&amp;id={$this->rknclass->user['user_id']}\" width=\"62\" height=\"62\" /></div>
+	<div id=\"member_name\">Welcome Back, <strong>{$this->rknclass->user['username']}</strong></div>
+	<div id=\"member_info\"><a href=\"{$this->rknclass->settings['site_url']}/" . RKN__adminpath . "/?ctr=login&amp;act=logout\" class=\"top_link\">Logout</a> - Usergroup: <strong>{$this->rknclass->user['group']['name']}</strong></div>
+	</div>
+	<div id=\"nav\"><a href=\"$admin_path/index.php?ctr=management\"><img src=\"images/management-tab.jpg\" border=\"0\"/></a><a href=\"$admin_path/index.php?ctr=security\"><img src=\"images/security-tab.jpg\" border=\"0\"/></a><a href=\"$admin_path/index.php?ctr=templates\"><img src=\"images/templates-tab.jpg\" border=\"0\" /></a><a href=\"$admin_path/index.php?ctr=content\"><img src=\"images/content-tab.jpg\" border=\"0\" /></a></div>
+	 
+	<div id=\"wrap1\">
+	<div id=\"wrap2\">
+			<div class=\"left-menu\">
+
+				<div class=\"menu-title\">Main Components</div>
+				<a href=\"$admin_path/index.php?ctr=security&amp;act=comments_settings\" class=\"left\">Comments Settings</a>
+				<a href=\"$admin_path/index.php?ctr=security&amp;act=login_settings\" class=\"left\">Login Settings</a>
+				<a href=\"$admin_path/index.php?ctr=security&amp;act=registration_settings\" class=\"left\">Registration Settings</a>
+				
+			</div>
+	
+	<div id=\"content\">
+	<div class=\"main\">
+	
+			<div class=\"main-stuff\">";	
+		}
+		
+	}
+	
+	public function admin_footer()
+	{
+		echo " </div>
+		       </div>
+        <div class=\"clear\"></div>
+
+	</div>
+	</div>
+</div>
+<div class=\"footer\">
+
+<div class=\"footer-left\">
+<a href=\"#\" onclick=\"window.scrollTo(0,0); return false;\">Back to top!</a>
+</div>
+
+</div>
+<div class=\"footer-bottom\">
+<div class=\"footer-bottom-copyright\">Powered by Predator CMS {$this->rknclass->settings['version']}" . ((defined('RKN__demo') AND RKN__demo == '1') ? ' (DEMO)' : '') ." &copy; " . date('Y') . " <a href=\"http://www.ranakin.com\">Ranakin Web Development</a></div></div>
+</div>
+</body>
+</html>";		
+	}
+
+	public function admin_error($error=NULL)
+	{
+		echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">
+<html>
+<head>
+<style>
+body 
+{
+background-image:url(images/login_01.jpg);
+background-repeat:repeat-x;     
+padding:0;
+}
+
+#error {
+background-image:url(images/error.jpg);
+background-repeat:no-repeat;
+background-position:left;
+border: 1px solid #000;
+background-color: #e3ecf3;      
+margin-top: 200px;       
+height: 150px; 
+position: absolute; 
+left: 50%;
+width:437px;
+margin-left: -220px;
+font-family:Verdana, Arial, Helvetica, sans-serif;
+font-size:12px;
+}
+
+#copy {      
+height: 150px; 
+width:437px;
+font-family:Verdana, Arial, Helvetica, sans-serif;
+font-size:12px;
+}
+
+#title-bar
+{
+	background-image:url(images/redirecting-bar.jpg);
+	background-repeat:repeat-x;
+	height:35px;
+	text-align:left;
+	text-indent:10px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-weight:bold;
+	padding-top:10px;
+	color:#FFFFFF;
+}
+#text-field
+{
+	background-image:url(images/login_08.jpg);
+	background-repeat:no-repeat;
+	border-width:1px;
+	border-color:#b0c8e1;
+	margin-right:50px;
+	margin-left:auto;
+}
+#spacer
+{
+	height:7px;
+}
+#message
+{
+	margin-top:20px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color:#2f4861;
+}
+#click-here
+{
+	margin-top:20px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color:#2f4861;
+}
+a:link
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:visited
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:active
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:hover
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+#copyright {   
+margin-top: 375px;       
+height: 150px; 
+position: absolute; 
+left: 50%;
+width:437px;
+margin-left: -220px;
+font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+text-align:center;
+font-size:11px;
+color:#2f4861;
+}
+</style>
+<title>{$this->rknclass->settings['site_name']} :: Error detected!</title>
+<script language=\"JavaScript\">
+function submitform()
+{
+  document.login.submit();
+}
+</script>
+</head>
+<body>
+	<div id=\"error\" align=\"center\">
+    	<div id=\"title-bar\">Error</div>
+        <div id=\"message\">$error</div>
+        <div id=\"click-here\"><a href=\"javascript:history.go(-1)\">Click here to go back!</a></div>
+	</div>
+    <div id=\"copyright\">Predator CMS {$this->rknclass->settings['version']} &copy; " . date('Y') . " Ranakin Web Development</div>
+</html>";
+	}
+	
+	public function admin_message($msg)
+	{
+		echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">
+<html>
+<head>
+<style>
+body 
+{
+background-image:url(images/login_01.jpg);
+background-repeat:repeat-x;     
+padding:0;
+}
+
+#success {
+background-image:url(images/success.jpg);
+background-repeat:no-repeat;
+background-position:left;
+border: 1px solid #000;
+background-color: #e3ecf3;      
+margin-top: 200px;       
+height: 150px; 
+position: absolute; 
+left: 50%;
+width:437px;
+margin-left: -220px;
+font-family:Verdana, Arial, Helvetica, sans-serif;
+font-size:12px;
+}
+
+#copy {      
+height: 150px; 
+width:437px;
+font-family:Verdana, Arial, Helvetica, sans-serif;
+font-size:12px;
+}
+
+#title-bar
+{
+	background-image:url(images/redirecting-bar.jpg);
+	background-repeat:repeat-x;
+	height:35px;
+	text-align:left;
+	text-indent:10px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-weight:bold;
+	padding-top:10px;
+	color:#FFFFFF;
+}
+#text-field
+{
+	background-image:url(images/login_08.jpg);
+	background-repeat:no-repeat;
+	border-width:1px;
+	border-color:#b0c8e1;
+	margin-right:50px;
+	margin-left:auto;
+}
+#spacer
+{
+	height:7px;
+}
+#message
+{
+	margin-top:20px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color:#2f4861;
+}
+#click-here
+{
+	margin-top:20px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color:#2f4861;
+}
+a:link
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:visited
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:active
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:hover
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+#copyright {   
+margin-top: 375px;       
+height: 150px; 
+position: absolute; 
+left: 50%;
+width:437px;
+margin-left: -220px;
+font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+text-align:center;
+font-size:11px;
+color:#2f4861;
+}
+</style>
+<title>{$this->rknclass->settings['site_name']} ::Success!</title>
+<script language=\"JavaScript\">
+function submitform()
+{
+  document.login.submit();
+}
+</script>
+</head>
+<body>
+	<div id=\"success\" align=\"center\">
+    	<div id=\"title-bar\">Success!</div>
+        <div id=\"message\">$msg</div>
+	</div>
+    <div id=\"copyright\">Predator CMS {$this->rknclass->settings['version']} &copy; " . date('Y') . " Ranakin Web Development</div>
+</html>";
+	}
+	/*
+	The function below is used for
+	the redirect pages, and should
+	be used only within the admin
+	panel and webmasters area
+	*/
+	
+	public function exec_redirect($message, $where_to, $full_url=false)
+	{
+		if(strpos($where_to, '[and]') !== false)
+		{
+			$where_to=str_replace('[and]', '&', $where_to);
+		}
+		
+		if($full_url === false)
+		{
+			if(defined('IN_RKN_PREDATOR_WEBMASTERS'))
+			{
+				$where_to=$this->rknclass->settings['site_url'] . '/webmasters/index.php' . $where_to;
+			}
+			elseif(defined('IN_RKN_PREDATOR_ADMIN'))
+			{
+				$where_to=$this->rknclass->settings['site_url'] . '/' . RKN__adminpath . '/index.php' . $where_to;		
+			}
+			else
+			{
+				if($this->rknclass->debug === true)
+				{
+					$this->rknclass->throw_debug_message('exec_redirect() should only be used within the admin panel, and webmasters area');
+				}
+			}
+		}
+		header("Refresh: 3;url=$where_to");
+		echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">
+<html>
+<head>
+<style>
+body 
+{
+background-image:url(images/login_01.jpg);
+background-repeat:repeat-x;     
+padding:0;
+}
+
+#redirect {
+border: 1px solid #000;
+background-color: #e3ecf3;      
+margin-top: 200px;       
+height: 150px; 
+position: absolute; 
+left: 50%;
+width:437px;
+margin-left: -220px;
+font-family:Verdana, Arial, Helvetica, sans-serif;
+font-size:12px;
+}
+
+#copy {      
+height: 150px; 
+width:437px;
+font-family:Verdana, Arial, Helvetica, sans-serif;
+font-size:12px;
+}
+
+#title-bar
+{
+	background-image:url(images/redirecting-bar.jpg);
+	background-repeat:repeat-x;
+	height:35px;
+	text-align:left;
+	text-indent:10px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-weight:bold;
+	padding-top:10px;
+	color:#FFFFFF;
+}
+#text-field
+{
+	background-image:url(images/login_08.jpg);
+	background-repeat:no-repeat;
+	border-width:1px;
+	border-color:#b0c8e1;
+	margin-right:50px;
+	margin-left:auto;
+}
+#spacer
+{
+	height:7px;
+}
+#message
+{
+	margin-top:20px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color:#2f4861;
+}
+#click-here
+{
+	margin-top:20px;
+	font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color:#2f4861;
+}
+a:link
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:visited
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:active
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+a:hover
+{
+	color:#2f4861;
+	text-decoration:underline;
+}
+#copyright {   
+margin-top: 375px;       
+height: 150px; 
+position: absolute; 
+left: 50%;
+width:437px;
+margin-left: -220px;
+font-family:Tahoma, Verdana, Arial, Helvetica, sans-serif;
+text-align:center;
+font-size:11px;
+color:#2f4861;
+}
+</style>
+<title>{$this->rknclass->settings['site_name']} :: Redirecting in progress...</title>
+<script language=\"JavaScript\">
+function submitform()
+{
+  document.login.submit();
+}
+</script>
+</head>
+<body>
+	<div id=\"redirect\" align=\"center\">
+    	<div id=\"title-bar\">Redirecting</div>
+        <div id=\"message\">$message</div>
+        <div id=\"click-here\"><a href=\"$where_to\">Click here if not redirected automatically</a></div>
+	</div>
+    <div id=\"copyright\">Predator CMS {$this->rknclass->settings['version']} &copy; " . date('Y') . " Ranakin Web Development</div>
+</html>";
+	}
+}
+
+?>

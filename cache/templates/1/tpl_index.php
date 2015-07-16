@@ -1,0 +1,3 @@
+{plugs}
+
+{page nav}

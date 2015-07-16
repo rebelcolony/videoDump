@@ -1,0 +1,1 @@
+<embed src="mediaplayer.swf" width="320" height="240" allowfullscreen="true" allowscriptaccess="always" flashvars="&displayheight=240&file={video}&height=240&image={thumb}&width=320" />

@@ -1,0 +1,30 @@
+#container > * {
+	display: none;
+}
+
+#container {
+	background: #FFF;
+	width: auto;
+}
+
+#wrap1 {
+	display: block;
+	width: auto;
+	background: #FFF;
+	margin: auto;
+}
+
+#wrap2 {
+	width: auto;
+	margin: auto;
+	background-image: none;
+}
+
+div.left-menu {
+	display: none;
+}
+
+#content {
+	margin: auto;
+	
+}
